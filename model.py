@@ -22,16 +22,19 @@ class Model:
     self.sigma = std_dev_celcius_per_sqrt_s * sqrt(self.h * 3600)
     self.eta = load_efficiency
     self.temp = internal_temp_celcius
-    
+    self.kwh_per_timestep = (1.0 / self.eta * self.P) * self.h
+    self.kwh = 0
     
   def w(self):
     """Returns a normal distribution of noise"""
     return 0
     #return normalvariate(0, self.sigma)
+    
+  def power_usage(self):
+    return self.therm.state * self.kwh_per_timestep
 
-  def power_kwh(minutes):
-    """Returns the kWh"""
-    return (1.0 / self.eta * self.P * minutes) / 60.0
+  def power_cost(self, cost_mwh):
+    return self.power_usage() * cost_mwh / 1000.0
 
   def iterate(self, external_temp_celcius):
     self.temp = self.a * self.temp + \
@@ -39,3 +42,4 @@ class Model:
       self.w()
     if self.temp < 12:
       self.temp = 12   # Magic so that it does not cool below 12 C
+    self.kwh += self.power_usage()
