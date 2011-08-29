@@ -14,15 +14,16 @@ class GreedyStrategy:
     self.temp_swing = temp_swing_celcius
     for (price, date) in price_dates:
       if price_map.has_key(date):
-        # Schedule curtailment at the given datetime
-        self.states[date] = "Curtail"
-        price_map.pop(date)
         # Precharge the preceeeding hour
         delta = timedelta(0, 3600, 0)
         prev_hour = date - delta
+        # See if we can pre-charge the preceeding hour
         if price_map.has_key(prev_hour):
+          # If so, schedule both an hour of pre-charging and an hour of curtailment
           self.states[prev_hour] = "Precharge"
           price_map.pop(prev_hour)
+          self.states[date] = "Curtail"
+          price_map.pop(date)
     self.current_swing = 0
 
   def iterate(self, datetime):
